@@ -207,15 +207,107 @@ class Board:
 
     def CanCastle(self, team):
         if (team == "white"):
-            if (self.whiteKingLoc == [7,4] and self.grid[7,7].piece == "rook") or (self.whiteKingLoc == [7,4] and self.grid[7,0].piece == "rook"):
-                return True
-            else:
-                return False
+            directions = []
+            if self.whiteKingLoc == [7,4] and self.grid[7][7].piece == "rook" and self.whiteInCheck == False:
+                copygrid = copy.deepcopy(self.grid)
+                if copygrid[7][5].piece == None and copygrid[7][6].piece == None:
+                    saveKing = copy.deepcopy(copygrid[7][4])
+                    copygrid[7][6] = saveKing
+                    copygrid[7][4] = Square(7, 4)
+                    saveRook = copy.deepcopy(copygrid[7][7])
+                    copygrid[7][5] = saveRook
+                    copygrid[7][7] = Square(7,7)
+                    self.loadProtections2(copygrid)
+                    if copygrid[7][6].blackprotected == False:
+                        directions.append("right")
+                
+            if self.whiteKingLoc == [7,4] and self.grid[7][0].piece == "rook" and self.whiteInCheck == False:
+                copygrid = copy.deepcopy(self.grid)
+                if copygrid[7][1].piece == None and copygrid[7][2].piece == None and copygrid[7][3].piece == None:
+                    saveKing = copy.deepcopy(copygrid[7][4])
+                    copygrid[7][6] = saveKing
+                    copygrid[7][4] = Square(7, 4)
+                    saveRook = copy.deepcopy(copygrid[7][0])
+                    copygrid[7][5] = saveRook 
+                    copygrid[7][7] = Square(7,0)
+                    self.loadProtections2(copygrid)
+                    if copygrid[7][2].blackprotected == False:
+                        directions.append("left")
+
+            return directions
+
         if (team == "black"):
-            if (self.blackKingLoc == [0,4] and self.grid[0,7].piece == "rook") or (self.whiteKingLoc == [0,4] and self.grid[0,0].piece == "rook"):
-                return True
-            else:
-                return False
+            directions = []
+            if self.blackKingLoc == [0,4] and self.grid[0][7].piece == "rook" and self.blackInCheck == False:
+                copygrid = copy.deepcopy(self.grid)
+                if copygrid[0][5].piece == None and copygrid[7][6].piece == None:
+                    saveKing = copy.deepcopy(copygrid[0][4])
+                    copygrid[0][6] = saveKing
+                    copygrid[0][4] = Square(0, 4)
+                    saveRook = copy.deepcopy(copygrid[0][7])
+                    copygrid[0][5] = saveRook
+                    copygrid[0][7] = Square(0,7)
+                    self.loadProtections2(copygrid)
+                    if copygrid[0][6].whiteprotected == False:
+                        directions.append("right")
+                
+            if self.blackKingLoc == [0,4] and self.grid[0][0].piece == "rook" and self.blackInCheck == False:
+                copygrid = copy.deepcopy(self.grid)
+                if copygrid[0][1].piece == None and copygrid[0][2].piece == None and copygrid[0][3].piece == None:
+                    saveKing = copy.deepcopy(copygrid[0][4])
+                    copygrid[0][6] = saveKing
+                    copygrid[0][6] = Square(0, 5)
+                    saveRook = copy.deepcopy(copygrid[0][0])
+                    copygrid[0][4] = saveRook
+                    copygrid[0][0] = Square(0,0)
+                    self.loadProtections2(copygrid)
+                    if copygrid[0][2].whiteprotected == False:
+                        directions.append("left")
+            
+            return directions
+            
+
+            
+
+    def Castle(self, team, direction):
+        grid = self.grid
+        if (team == "white"):
+            if direction == "right":
+                saveKing = copy.deepcopy(grid[7][4])
+                grid[7][6] = saveKing
+                grid[7][4] = Square(7, 4)
+                saveRook = copy.deepcopy(grid[7][7])
+                grid[7][5] = saveRook
+                grid[7][7] = Square(7,7)
+                self.whiteKingLoc = [7, 6]
+                    
+            if direction == "left":
+                saveKing = copy.deepcopy(grid[7][4])
+                grid[7][2] = saveKing
+                grid[7][4] = Square(7, 4)
+                saveRook = copy.deepcopy(grid[7][0])
+                grid[7][5] = saveRook
+                grid[7][7] = Square(7,0)
+                self.whiteKingLoc = [7, 2]
+
+        if (team == "black"):
+            if direction == "right":
+                saveKing = copy.deepcopy(grid[0][4])
+                grid[0][6] = saveKing
+                grid[0][4] = Square(0, 4)
+                saveRook = copy.deepcopy(grid[0][7])
+                grid[0][5] = saveRook
+                grid[0][7] = Square(0,7)
+                self.whiteKingLoc = [7, 6]
+                    
+            if direction == "left":
+                saveKing = copy.deepcopy(grid[0][4])
+                grid[0][2] = saveKing
+                grid[0][4] = Square(0, 4)
+                saveRook = copy.deepcopy(grid[0][0])
+                grid[0][5] = saveRook
+                grid[0][7] = Square(0,0)
+                self.whiteKingLoc = [0, 2]
 
             
                 
@@ -1235,8 +1327,6 @@ class Board:
                                 copygrid = copy.deepcopy(self.grid)
                                 copykingloc = copy.deepcopy(self.whiteKingLoc)
                                 self.loadProtections2(copygrid)
-                                print("moving piece:", self.grid[row][col].piece, "from", [row],[col],"to square", move)
-                                self.printProtections2(copygrid)
                                 save_initial = copy.deepcopy(copygrid[row][col])
                                 copygrid[move[0]][move[1]] = save_initial
                                 copygrid[row][col] = Square(row, col)
@@ -1246,15 +1336,9 @@ class Board:
                                 if piece == "king":
                                     copykingloc = [move[0], move[1]]
                                 if copygrid[copykingloc[0]][copykingloc[1]].blackprotected == False:
-                                    print("adding move to available moves")
                                     self.white_movable.append(save_initial)
                                     self.white_move.append([move[0], move[1]])
-                                    print()
-                                    print()
-                                else:
-                                    print("move not added")
-                                    print()
-                                    print()
+
             
             if len(self.white_movable) == 0:
                 self.whiteInCheckmate = True
@@ -1273,8 +1357,7 @@ class Board:
                                 copygrid = copy.deepcopy(self.grid)
                                 copykingloc = copy.deepcopy(self.blackKingLoc)
                                 self.loadProtections2(copygrid)
-                                print("moving piece:", self.grid[row][col].piece, "from", [row],[col],"to square", move)
-                                self.printProtections2(copygrid)
+                                #print("moving piece:", self.grid[row][col].piece, "from", [row],[col],"to square", move)
                                 save_initial = copy.deepcopy(copygrid[row][col])
                                 copygrid[move[0]][move[1]] = save_initial
                                 copygrid[row][col] = Square(row, col)
@@ -1284,15 +1367,9 @@ class Board:
                                 if piece == "king":
                                     copykingloc = [move[0], move[1]]
                                 if copygrid[copykingloc[0]][copykingloc[1]].whiteprotected == False:
-                                    print("adding move to available moves")
                                     self.black_movable.append(save_initial)
                                     self.black_move.append([move[0], move[1]])
-                                    print()
-                                    print()
-                                else:
-                                    print("move not added")
-                                    print()
-                                    print()
+
             
             if len(self.black_movable) == 0:
                 self.blackInCheckmate = True
@@ -1344,9 +1421,3 @@ class Board:
                 return False
                 # check for checkmate
                 
-                
-                
-            
-            
-        
-        
